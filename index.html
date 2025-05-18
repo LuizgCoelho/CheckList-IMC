@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="shortcut icon" href="audit_7960527.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CheckList + IMC</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px 20px 80px;
+      background-color: white;
+      color: black;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background-color: #f4f4f4;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px 0 0;
+      border: none;
+      border-radius: 5px;
+      background: linear-gradient(-20deg, rgba(2, 2, 66, 0.781),blue);
+      color: white;
+      cursor: pointer;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 10px;
+      transform: scale(1.2);
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    ul {
+      list-style-type: disc;
+      padding-left: 20px;
+      margin-top: 10px;
+    }
+
+    .resultado {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px;
+      color: #666;
+      font-size: 0.9em;
+    }
+
+    /* Tema escuro */
+    body.dark-mode {
+      background-color: #121212;
+      color: white;
+    }
+
+    body.dark-mode .container {
+      background-color: #1e1e1e;
+      color: white;
+    }
+
+    body.dark-mode input {
+      background-color: #2b2b2b;
+      color: white;
+      border: 1px solid #555;
+    }
+
+    body.dark-mode footer {
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>✅ Lista de Tarefas</h2>
+    <input type="text" id="tarefaInput" placeholder="Digite uma tarefa" />
+    <button onclick="adicionarTarefa()">Adicionar Tarefa</button>
+    <ul id="listaTarefas"></ul>
+
+    <hr>
+
+    <h2>📏 Calculadora de IMC</h2>
+    <input type="number" id="peso" placeholder="Peso (kg)" step="0.1" />
+    <input type="number" id="altura" placeholder="Altura (m)" step="0.01" />
+    <br>
+    <button onclick="calcularIMC()">Calcular IMC</button>
+    <div class="resultado" id="resultadoIMC"></div>
+
+    <hr>
+
+    <button onclick="alternarTema()">🌙 Alternar Tema</button>
+  </div>
+
+  <footer>
+    Site feito por Luiz Guilherme Ferreira Coelho
+  </footer>
+
+  <script>
+  function salvarTarefas() {
+    const itens = document.querySelectorAll("#listaTarefas li");
+    const tarefas = [];
+
+    itens.forEach(item => {
+      const checkbox = item.querySelector("input[type='checkbox']");
+      const texto = item.querySelector("span").textContent;
+      tarefas.push({ texto, concluido: checkbox.checked });
+    });
+
+    localStorage.setItem("tarefas", JSON.stringify(tarefas));
+  }
+
+  function carregarTarefas() {
+    const tarefasSalvas = JSON.parse(localStorage.getItem("tarefas")) || [];
+
+    tarefasSalvas.forEach(tarefa => {
+      const li = document.createElement("li");
+
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = tarefa.concluido;
+      checkbox.addEventListener("change", salvarTarefas); // salva quando clica
+
+      const span = document.createElement("span");
+      span.textContent = tarefa.texto;
+
+      li.appendChild(checkbox);
+      li.appendChild(span);
+
+      document.getElementById("listaTarefas").appendChild(li);
+    });
+  }
+
+  function adicionarTarefa() {
+    const input = document.getElementById("tarefaInput");
+    const texto = input.value.trim();
+    if (texto === "") return;
+
+    const li = document.createElement("li");
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.addEventListener("change", salvarTarefas);
+
+    const span = document.createElement("span");
+    span.textContent = texto;
+
+    li.appendChild(checkbox);
+    li.appendChild(span);
+
+    document.getElementById("listaTarefas").appendChild(li);
+    input.value = "";
+
+    salvarTarefas();
+  }
+
+  function calcularIMC() {
+    const peso = parseFloat(document.getElementById("peso").value);
+    const altura = parseFloat(document.getElementById("altura").value);
+    const resultado = document.getElementById("resultadoIMC");
+
+    if (!peso || !altura || altura <= 0) {
+      resultado.textContent = "Por favor, insira valores válidos.";
+      resultado.style.color = "red";
+      return;
+    }
+
+    const imc = peso / (altura * altura);
+    let mensagem = "";
+
+    if (imc < 18.5) {
+      mensagem = "Abaixo do peso";
+    } else if (imc < 25) {
+      mensagem = "Peso ideal";
+    } else {
+      mensagem = "Acima do peso";
+    }
+
+    resultado.textContent = `IMC: ${imc.toFixed(2)} - ${mensagem}`;
+    resultado.style.color = "";
+  }
+
+  function alternarTema() {
+    document.body.classList.toggle("dark-mode");
+  }
+
+  // Carrega tarefas quando a página abre
+  window.onload = carregarTarefas;
+</script>
+
+
+</body>
+</html>
